@@ -1,0 +1,86 @@
+services:
+  # The React application, served by nginx, which also proxies /api to the API
+  # so the browser talks to a single origin.
+  frontend:
+    image: kestrel/frontend:stack
+    restart: always
+    depends_on:
+      - api
+    ports:
+      - 80
+
+  api:
+    image: kestrel/api:stack
+    restart: always
+    depends_on:
+      - db
+    environment:
+      - PORT=8080
+      - DATABASE_HOST=db
+      - DATABASE_NAME=rentals
+      - DATABASE_USER=postgres
+      - DATABASE_SSLMODE=disable
+      - SMTP_HOST=mailpit
+      - SMTP_PORT=1025
+      - MAIL_FROM=rentals@kestrelrental.example
+      - MAIL_FROM_NAME=Kestrel Equipment Rental
+      # Same-origin through the nginx proxy, so no cross-origin exception is
+      # needed. Set PUBLIC_BASE_URL at deploy time to the address people use.
+      - PUBLIC_BASE_URL=http://localhost
+      - CORS_ORIGINS=http://localhost
+      - TAX_RATE_PERCENT=8.5
+      - LATE_FEE_MULTIPLE=1.5
+      # Populate a fresh database with the demonstration yard on first boot.
+      # Set SEED_ON_BOOT=false at deploy time for a real deployment.
+      - SEED_ON_BOOT=true
+      - LOG_FORMAT=json
+    ports:
+      - 8080
+
+  # Sends the reminder emails and runs the daily overdue sweep. Separate from
+  # the API so slow mail delivery can never hold up a web request.
+  worker:
+    image: kestrel/api:stack
+    command: ["/usr/local/bin/worker"]
+    restart: always
+    depends_on:
+      - db
+      - api
+    environment:
+      - DATABASE_HOST=db
+      - DATABASE_NAME=rentals
+      - DATABASE_USER=postgres
+      - DATABASE_SSLMODE=disable
+      - SMTP_HOST=mailpit
+      - SMTP_PORT=1025
+      - MAIL_FROM=rentals@kestrelrental.example
+      - MAIL_FROM_NAME=Kestrel Equipment Rental
+      - PUBLIC_BASE_URL=http://localhost
+      - LATE_FEE_MULTIPLE=1.5
+      - WORKER_POLL_SECONDS=15
+      - LOG_FORMAT=json
+
+  db:
+    image: postgres:17-alpine
+    restart: always
+    environment:
+      - POSTGRES_DB=rentals
+      - POSTGRES_USER=postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  # Catches every outbound email and shows it in a browser inbox. This is the
+  # development and demonstration mail transport; a real deployment points
+  # SMTP_HOST at a relay instead and drops this service.
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: always
+    environment:
+      - MP_MAX_MESSAGES=5000
+      - MP_SMTP_AUTH_ACCEPT_ANY=1
+      - MP_SMTP_AUTH_ALLOW_INSECURE=1
+    ports:
+      - 8025
+
+volumes:
+  db-data:

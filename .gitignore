@@ -1,0 +1,7 @@
+# Build output
+frontend/dist/
+frontend/node_modules/
+
+# stack deployment artifacts — generated, disposable, and hold generated secrets
+/rental-deployment/
+*-deployment/

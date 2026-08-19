@@ -1,0 +1,17 @@
+name: kestrel-rental
+description: "Tool and industrial machine rental — customer shop, service desk, admin, billing and reminder emails"
+
+containers:
+  - name: kestrel/api
+    path: ./backend
+  - name: kestrel/frontend
+    path: ./frontend
+
+pods:
+  - name: rental
+    path: ./stack/pods/rental
+
+# Generated at deploy time and delivered to every container as an environment
+# variable. Nothing here is ever written into git, the spec, or config.env.
+secrets:
+  POSTGRES_PASSWORD:
