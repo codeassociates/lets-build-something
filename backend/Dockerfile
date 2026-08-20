@@ -23,4 +23,5 @@ COPY --from=build /out/seed   /usr/local/bin/seed
 USER rental
 ENV PORT=8080
 EXPOSE 8080
+# The worker and seed binaries are selected by overriding the command.
 CMD ["/usr/local/bin/api"]

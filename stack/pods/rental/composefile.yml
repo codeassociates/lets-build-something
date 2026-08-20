@@ -24,16 +24,22 @@ services:
       - SMTP_PORT=1025
       - MAIL_FROM=rentals@kestrelrental.example
       - MAIL_FROM_NAME=Kestrel Equipment Rental
-      # Same-origin through the nginx proxy, so no cross-origin exception is
-      # needed. Set PUBLIC_BASE_URL at deploy time to the address people use.
-      - PUBLIC_BASE_URL=http://localhost
-      - CORS_ORIGINS=http://localhost
       - TAX_RATE_PERCENT=8.5
       - LATE_FEE_MULTIPLE=1.5
-      # Populate a fresh database with the demonstration yard on first boot.
-      # Set SEED_ON_BOOT=false at deploy time for a real deployment.
-      - SEED_ON_BOOT=true
       - LOG_FORMAT=json
+      # Forwarded, not defaulted. An inline literal would shadow the deployment's
+      # config.env on both targets (inline ranks above it by design), so these
+      # are written as pass-throughs: the deployer's value reaches the container,
+      # and the knobs stay visible here rather than being invisible omissions.
+      #
+      #   stack init ... --config PUBLIC_BASE_URL=https://host \
+      #                  --config CORS_ORIGINS=https://host \
+      #                  --config SEED_ON_BOOT=true
+      #
+      # Unset is fine: the API falls back to its own defaults.
+      - PUBLIC_BASE_URL=${PUBLIC_BASE_URL}
+      - CORS_ORIGINS=${CORS_ORIGINS}
+      - SEED_ON_BOOT=${SEED_ON_BOOT}
     ports:
       - 8080
 
@@ -55,7 +61,7 @@ services:
       - SMTP_PORT=1025
       - MAIL_FROM=rentals@kestrelrental.example
       - MAIL_FROM_NAME=Kestrel Equipment Rental
-      - PUBLIC_BASE_URL=http://localhost
+      - PUBLIC_BASE_URL=${PUBLIC_BASE_URL}
       - LATE_FEE_MULTIPLE=1.5
       - WORKER_POLL_SECONDS=15
       - LOG_FORMAT=json
@@ -79,7 +85,11 @@ services:
       - MP_MAX_MESSAGES=5000
       - MP_SMTP_AUTH_ACCEPT_ANY=1
       - MP_SMTP_AUTH_ALLOW_INSECURE=1
+    # 1025 is SMTP, which the API and worker connect to; 8025 is the web inbox.
+    # Both are declared because both are dialled — a Service only forwards the
+    # ports it lists.
     ports:
+      - 1025
       - 8025
 
 volumes:
