@@ -1,0 +1,3 @@
+images:
+  axllent/mailpit:latest: sha256:d5ecbb067db3705fa953d79e1b7f81ef84038df67aba6c52825d8c02a1ea748a
+  postgres:17-alpine: sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73
