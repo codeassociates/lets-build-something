@@ -2,7 +2,7 @@ services:
   # The React application, served by nginx, which also proxies /api to the API
   # so the browser talks to a single origin.
   frontend:
-    image: kestrel/frontend:stack
+    image: codeassociates/kestrel-frontend:stack
     restart: always
     depends_on:
       - api
@@ -10,7 +10,7 @@ services:
       - 80
 
   api:
-    image: kestrel/api:stack
+    image: codeassociates/kestrel-api:stack
     restart: always
     depends_on:
       - db
@@ -46,7 +46,7 @@ services:
   # Sends the reminder emails and runs the daily overdue sweep. Separate from
   # the API so slow mail delivery can never hold up a web request.
   worker:
-    image: kestrel/api:stack
+    image: codeassociates/kestrel-api:stack
     command: ["/usr/local/bin/worker"]
     restart: always
     depends_on:

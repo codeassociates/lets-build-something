@@ -2,9 +2,9 @@ name: kestrel-rental
 description: "Tool and industrial machine rental — customer shop, service desk, admin, billing and reminder emails"
 
 containers:
-  - name: kestrel/api
+  - name: codeassociates/kestrel-api
     path: ./backend
-  - name: kestrel/frontend
+  - name: codeassociates/kestrel-frontend
     path: ./frontend
 
 pods:
